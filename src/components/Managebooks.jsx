@@ -322,121 +322,119 @@ const ManageBooks = () => {
 
   return (
     <div>
-    <Navbar/>
+      <Navbar />
 
-    <div className="p-6">
-      <h1 className="text-3xl text-blue-800 font-bold mb-24 text-center">
-        Manage Books
-      </h1>
-      <button
-  onClick={() => setShowForm(true)}
-  className="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600 absolute right-0 top-44"
->
-  Add Book
-</button>
+      <div className="p-6">
+        <h1 className="text-3xl text-blue-800 font-bold mb-24 text-center">
+          Manage Books
+        </h1>
+        <button
+          onClick={() => setShowForm(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600 absolute right-12 top-44"
+        >
+          Add Book
+        </button>
 
-
-
-      <table className="min-w-full bg-white shadow-md rounded">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="px-4 py-2">Author Name</th>
-            <th className="px-4 py-2">Title</th>
-            <th className="px-4 py-2">Genre</th>
-            <th className="px-4 py-2">Published Year</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {books.map((book) => (
-            <tr key={book.id} className="border-b">
-              <td className="px-4 py-2">{book.authorName}</td>
-              <td className="px-4 py-2">{book.title}</td>
-              <td className="px-4 py-2">{book.genre}</td>
-              <td className="px-4 py-2">{book.publishedYear}</td>
-              <td className="px-4 py-2">
-                <button
-                  onClick={() => handleEdit(book)}
-                  className="text-blue-500 hover:text-blue-700 mr-2"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteBook(book.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </td>
+        <table className="min-w-full bg-white shadow-md rounded">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="px-4 py-2">Author Name</th>
+              <th className="px-4 py-2">Title</th>
+              <th className="px-4 py-2">Genre</th>
+              <th className="px-4 py-2">Published Year</th>
+              <th className="px-4 py-2">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {books.map((book) => (
+              <tr key={book.id} className="border-b">
+                <td className="px-4 py-2">{book.authorName}</td>
+                <td className="px-4 py-2">{book.title}</td>
+                <td className="px-4 py-2">{book.genre}</td>
+                <td className="px-4 py-2">{book.publishedYear}</td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => handleEdit(book)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteBook(book.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* Popup form for adding/editing books */}
-      {showForm && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-md w-1/3">
-            <h2 className="text-2xl font-bold mb-4">
-              {isEditing ? "Edit Book" : "Add Book"}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                name="authorName"
-                value={form.authorName}
-                onChange={handleChange}
-                placeholder="Author Name"
-                className="border p-2 w-full mb-2 rounded"
-                required
-              />
-              <input
-                type="text"
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                placeholder="Title"
-                className="border p-2 w-full mb-2 rounded"
-                required
-              />
-              <input
-                type="text"
-                name="genre"
-                value={form.genre}
-                onChange={handleChange}
-                placeholder="Genre"
-                className="border p-2 w-full mb-2 rounded"
-                required
-              />
-              <input
-                type="number"
-                name="publishedYear"
-                value={form.publishedYear}
-                onChange={handleChange}
-                placeholder="Published Year"
-                className="border p-2 w-full mb-4 rounded"
-                required
-              />
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  {isEditing ? "Update Book" : "Add Book"}
-                </button>
-              </div>
-            </form>
+        {/* Popup form for adding/editing books */}
+        {showForm && (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded shadow-md w-1/3">
+              <h2 className="text-2xl font-bold mb-4">
+                {isEditing ? "Edit Book" : "Add Book"}
+              </h2>
+              <form onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  name="authorName"
+                  value={form.authorName}
+                  onChange={handleChange}
+                  placeholder="Author Name"
+                  className="border p-2 w-full mb-2 rounded"
+                  required
+                />
+                <input
+                  type="text"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="Title"
+                  className="border p-2 w-full mb-2 rounded"
+                  required
+                />
+                <input
+                  type="text"
+                  name="genre"
+                  value={form.genre}
+                  onChange={handleChange}
+                  placeholder="Genre"
+                  className="border p-2 w-full mb-2 rounded"
+                  required
+                />
+                <input
+                  type="number"
+                  name="publishedYear"
+                  value={form.publishedYear}
+                  onChange={handleChange}
+                  placeholder="Published Year"
+                  className="border p-2 w-full mb-4 rounded"
+                  required
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    {isEditing ? "Update Book" : "Add Book"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </div>
   );
 };

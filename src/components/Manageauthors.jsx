@@ -192,7 +192,7 @@ import Navbar from "./Navbar";
 
 function ManageAuthors() {
   const [authors, setAuthors] = useState([]);
-  const [newAuthor, setNewAuthor] = useState({ name: "", bio: "" });
+  const [newAuthor, setNewAuthor] = useState({ name: "", bio: "", year: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editingAuthorId, setEditingAuthorId] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -211,6 +211,7 @@ function ManageAuthors() {
           id: index, // Generate a local ID
           name: doc.author_name?.[0] || "Unknown Author",
           bio: doc.title || "No Bio Available",
+          year: doc.publish_year?.[0] || "Unknown Year", // Extract publish year
         }));
         setAuthors(mappedAuthors);
       })
@@ -227,8 +228,8 @@ function ManageAuthors() {
 
   // Handle save (add or update)
   const handleSave = () => {
-    if (!newAuthor.name || !newAuthor.bio) {
-      alert("Both name and bio are required!");
+    if (!newAuthor.name || !newAuthor.bio || !newAuthor.year) {
+      alert("All fields (name, bio, and year) are required!");
       return;
     }
 
@@ -237,7 +238,7 @@ function ManageAuthors() {
       setAuthors(
         authors.map((author) =>
           author.id === editingAuthorId
-            ? { ...author, name: newAuthor.name, bio: newAuthor.bio }
+            ? { ...author, name: newAuthor.name, bio: newAuthor.bio, year: newAuthor.year }
             : author
         )
       );
@@ -257,113 +258,125 @@ function ManageAuthors() {
     if (author) {
       setIsEditing(true);
       setEditingAuthorId(author.id);
-      setNewAuthor({ name: author.name, bio: author.bio });
+      setNewAuthor({ name: author.name, bio: author.bio, year: author.year });
     } else {
       setIsEditing(false);
       setEditingAuthorId(null);
-      setNewAuthor({ name: "", bio: "" });
+      setNewAuthor({ name: "", bio: "", year: "" });
     }
   };
 
   // Close popup
   const closePopup = () => {
     setShowPopup(false);
-    setNewAuthor({ name: "", bio: "" });
+    setNewAuthor({ name: "", bio: "", year: "" });
     setIsEditing(false);
     setEditingAuthorId(null);
   };
 
   return (
     <div>
-      <Navbar/>
-    <div className="p-4">
-    <h1 className="text-3xl text-blue-800 font-bold mb-24 text-center">
-    Manage Authors</h1>
-      <div className="flex justify-end -mb-12">
-        <button
-          onClick={() => openPopup()}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 absolute right-0 top-44"
-        >
-          Add Author
-        </button>
-      </div>
+      <Navbar />
+      <div className="p-4">
+        <h1 className="text-3xl text-blue-800 font-bold mb-24 text-center">
+          Manage Authors
+        </h1>
+        <div className="flex justify-end -mb-12">
+          <button
+            onClick={() => openPopup()}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 absolute right-12 top-44"
+          >
+            Add Author
+          </button>
+        </div>
 
-      <table className="min-w-full bg-white shadow-md rounded mt-14">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="px-4 py-2 text-left">Name</th>
-            <th className="px-4 py-2 text-left">Bio</th>
-            <th className="px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {authors.map((author) => (
-            <tr key={author.id} className="border-b">
-              <td className="px-4 py-2">{author.name}</td>
-              <td className="px-4 py-2">{author.bio}</td>
-              <td className="px-4 py-2">
-                <button
-                  onClick={() => openPopup(author)}
-                  className="text-blue-500 hover:text-blue-700 mr-2"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(author.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </td>
+        <table className="min-w-full bg-white shadow-md rounded mt-14">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="px-4 py-2 text-left">Name</th>
+              <th className="px-4 py-2 text-left">Bio</th>
+              <th className="px-4 py-2 text-left">Published Year</th> {/* Added column */}
+              <th className="px-4 py-2 text-left">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {authors.map((author) => (
+              <tr key={author.id} className="border-b">
+                <td className="px-4 py-2">{author.name}</td>
+                <td className="px-4 py-2">{author.bio}</td>
+                <td className="px-4 py-2">{author.year}</td> {/* Display the year */}
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => openPopup(author)}
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(author.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {showPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h3 className="text-xl font-semibold mb-4">
-              {isEditing ? "Edit Author" : "Add Author"}
-            </h3>
-            <input
-              type="text"
-              value={newAuthor.name}
-              onChange={(e) =>
-                setNewAuthor({ ...newAuthor, name: e.target.value })
-              }
-              placeholder="Author Name"
-              className="border p-2 rounded mb-4 w-full"
-            />
-            <textarea
-              value={newAuthor.bio}
-              onChange={(e) =>
-                setNewAuthor({ ...newAuthor, bio: e.target.value })
-              }
-              placeholder="Author Bio"
-              className="border p-2 rounded mb-4 w-full"
-            />
-            <div className="flex justify-end">
-              <button
-                onClick={closePopup}
-                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                {isEditing ? "Update Author" : "Add Author"}
-              </button>
+        {showPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded shadow-lg w-96">
+              <h3 className="text-xl font-semibold mb-4">
+                {isEditing ? "Edit Author" : "Add Author"}
+              </h3>
+              <input
+                type="text"
+                value={newAuthor.name}
+                onChange={(e) =>
+                  setNewAuthor({ ...newAuthor, name: e.target.value })
+                }
+                placeholder="Author Name"
+                className="border p-2 rounded mb-4 w-full"
+              />
+              <textarea
+                value={newAuthor.bio}
+                onChange={(e) =>
+                  setNewAuthor({ ...newAuthor, bio: e.target.value })
+                }
+                placeholder="Author Bio"
+                className="border p-2 rounded mb-4 w-full"
+              />
+              <input
+                type="text"
+                value={newAuthor.year}
+                onChange={(e) =>
+                  setNewAuthor({ ...newAuthor, year: e.target.value })
+                }
+                placeholder="Published Year"
+                className="border p-2 rounded mb-4 w-full"
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={closePopup}
+                  className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  {isEditing ? "Update Author" : "Add Author"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
-    </div>
-
   );
 }
 
 export default ManageAuthors;
+

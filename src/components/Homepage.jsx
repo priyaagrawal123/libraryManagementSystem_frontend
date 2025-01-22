@@ -1,219 +1,184 @@
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
 
-// function Homepage() {
-//   const navigate = useNavigate();
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [searchResults, setSearchResults] = useState([]);
-//   const [searchType, setSearchType] = useState("author"); // Default search type
-
-//   const handleAuthorsClick = () => {
-//     navigate("/manageauthors");
-//   };
-
-//   const handleBooksClick = () => {
-//     navigate("/managebooks");
-//   };
-
-//   const handleSearch = async () => {
-//     try {
-//       const endpoint =
-//         searchType === "author"
-//           ? `http://localhost:8080/api/books/author?authorName=${searchQuery}`
-//           : `http://localhost:8080/api/books/title?title=${searchQuery}`;
-
-//       const response = await axios.get(endpoint);
-//       setSearchResults(response.data);
-//     } catch (error) {
-//       console.error("Error fetching data:", error);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-100">
-//       {/* Navbar */}
-//       <nav className="bg-blue-600 p-4 shadow-md">
-//         <div className="max-w-7xl mx-auto flex justify-between items-center">
-//           <h1 className="text-white text-2xl font-bold">Library Management</h1>
-//           <div className="space-x-4">
-//             <button
-//               onClick={handleAuthorsClick}
-//               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
-//             >
-//               Manage Authors
-//             </button>
-//             <button
-//               onClick={handleBooksClick}
-//               className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-200"
-//             >
-//               Manage Books
-//             </button>
-//           </div>
-//         </div>
-//       </nav>
-
-//       {/* Main Content */}
-//       <div className="flex flex-col items-center justify-center py-16">
-//         <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
-//           Welcome to Library Management System!
-//         </h1>
-
-//         {/* Search Bar */}
-//         <div className="flex items-center space-x-4 mb-6">
-//           <input
-//             type="text"
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//             placeholder="Search for any Book or Author"
-//             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           />
-//           <select
-//             value={searchType}
-//             onChange={(e) => setSearchType(e.target.value)}
-//             className="px-4 py-2 border border-gray-300 rounded-lg"
-//           >
-//             <option value="author">Author</option>
-//             <option value="title">Title</option>
-//           </select>
-//           <button
-//             onClick={handleSearch}
-//             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
-//           >
-//             Search
-//           </button>
-//         </div>
-
-//         {/* Search Results */}
-//         {searchResults.length > 0 && (
-//           <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-4">
-//             <h2 className="text-xl font-bold mb-4">Search Results:</h2>
-//             <ul>
-//               {searchResults.map((book, index) => (
-//                 <li
-//                   key={index}
-//                   className="p-2 border-b border-gray-300 last:border-b-0"
-//                 >
-//                   <strong>{book.title}</strong> - {book.authorName}
-//                 </li>
-//               ))}
-//             </ul>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Homepage;
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Navbar from "./Navbar";
 import { Button } from "./ui/button";
+
 function Homepage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const observer = useRef();
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const endpoint = `http://openlibrary.org/search.json?q=all&limit=50`;
-        const response = await axios.get(endpoint);
-        const filteredResults =
-          response.data.docs?.filter((book) => book.title && book.author_name) ||
-          [];
-        setSearchResults(filteredResults);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching initial data:", error.message);
-        setLoading(false);
-      }
-    };
+    fetchBooks(page);
+  }, [page]);
 
-    fetchBooks();
-  }, []);
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      alert("Please enter a search term");
-      return;
-    }
-
+  const fetchBooks = async (currentPage) => {
     try {
       setLoading(true);
-      const query = encodeURIComponent(searchQuery);
-      const endpoint = `http://openlibrary.org/search.json?q=${query}&limit=50`;
+      const endpoint = `http://openlibrary.org/search.json?q=${
+        searchQuery || "all"
+      }&limit=10&page=${currentPage}`;
       const response = await axios.get(endpoint);
 
       const filteredResults =
-        response.data.docs?.filter((book) => book.title && book.author_name) ||
-        [];
-      setSearchResults(filteredResults);
+        response.data.docs?.filter((book) => book.title && book.author_name) || [];
+
+      setSearchResults((prev) => [...prev, ...filteredResults]);
+      setHasMore(filteredResults.length === 10);
     } catch (error) {
-      console.error("Error fetching data:", error.message);
-      alert("An error occurred while fetching the data. Please try again.");
+      console.error("Error fetching books:", error.message);
+      alert("An error occurred while fetching the books. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div>
-    <Navbar/>
-    <div className="flex flex-col items-center justify-center py-16">
-             <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
-               Welcome to Library Management System!
-            </h1>
-          <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-6">Search Books</h1>
-        <div className="flex gap-4 items-center mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for any Book or Author"
-            className="flex-grow p-3 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Button
-            onClick={handleSearch}
-            className="shadow hover:bg-blue-600"
-          >
-            Search
-          </Button>
-        </div>
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      alert("Please enter a search term");
+      return;
+    }
+    setPage(1);
+    setSearchResults([]);
+    fetchBooks(1);
+  };
 
-        {loading ? (
-          <p className="text-center text-lg">Loading...</p>
-        ) : searchResults.length > 0 ? (
-          <ul className="space-y-4">
-            {searchResults.map((book, index) => (
-              <li
-                key={index}
-                className="p-4 bg-white rounded-md shadow border border-gray-200"
-              >
-                <strong className="block text-lg font-medium text-gray-700">
-                  {book.title || "No Title Available"}
-                </strong>
-                <span className="text-gray-600">
-                  {book.author_name?.join(", ") || "Unknown Author"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-center text-lg text-red-500">
-            No results found. Try a different search term.
-          </p>
-        )}
-      </div>
-    </div>
+  const handleBookClick = (book) => setSelectedBook(book);
+  const handleClosePopup = () => setSelectedBook(null);
+
+  const lastBookElementRef = (node) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  };
+
+  const SkeletonCard = () => (
+    <div className="bg-gray-300 rounded-lg p-4">
+      <div className="w-full h-8 bg-gray-400 rounded mb-4"></div>
+      <div className="w-3/4 h-6 bg-gray-400 rounded mb-2"></div>
+      <div className="w-1/2 h-6 bg-gray-400 rounded"></div>
     </div>
   );
-}
+  
+
+  return (
+    <div>
+      <Navbar />
+
+      {/* Hero Section */}
+      <div className="flex flex-col items-center justify-center py-16">
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">
+          Welcome to Library Management System!
+        </h1>
+
+        {/* Search Input and Button */}
+        <div className="max-w-3xl mx-auto">
+          <div className="flex gap-4 items-center mb-6">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for any Book or Author"
+              className="flex-grow p-3 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Button onClick={handleSearch} className="shadow hover:bg-blue-600">
+              Search
+            </Button>
+          </div>
+
+          {/* Loader on Initial Load */}
+          {loading && searchResults.length === 0 && (
+            <div className="text-center text-lg">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 mx-auto mb-4"></div>
+              Loading books...
+            </div>
+          )}
+
+          {/* Display Results or Empty State */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mx-5">
+            {searchResults.length === 0 && !loading ? (
+              <p className="text-center text-lg text-gray-500">
+                No results found. Please try a different search term.
+              </p>
+            ) : (
+              searchResults.map((book, index) => (
+                <div
+                  key={index}
+                  ref={index === searchResults.length - 1 ? lastBookElementRef : null}
+                  className="p-4 bg-white rounded-md shadow border border-gray-200 cursor-pointer w-full"
+                  onClick={() => handleBookClick(book)}
+                >
+                  <div className="text-lg font-medium text-blue-600 hover:underline truncate">
+                    {book.title || "No Title Available"}
+                  </div>
+                  <div className="text-gray-600 truncate">
+                    {book.author_name?.join(", ") || "Unknown Author"}
+                  </div>
+                  <div className="text-gray-500">
+                    First Published: {book.first_publish_year || "Unknown Year"}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Skeleton Cards on Scroll */}
+          {loading && searchResults.length > 0 && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mx-5">
+    {Array(5)
+      .fill()
+      .map((_, idx) => (
+        <SkeletonCard key={idx} />
+      ))}
+  </div>
+)}
+
+          {/* No More Data Message */}
+          {!hasMore && !loading && searchResults.length > 0 && (
+            <p className="text-center text-lg text-gray-500">
+              No more books to load.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Book Details Popup */}
+      {selectedBook && (
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-2xl font-bold text-blue-600">
+              {selectedBook.title}
+            </h2>
+            <p className="text-lg mt-2">
+              <strong>Author(s): </strong>
+              {selectedBook.author_name?.join(", ") || "Unknown Author"}
+            </p>
+            <p className="text-lg mt-2">
+              <strong>First Published: </strong>
+              {selectedBook.first_publish_year || "Unknown Year"}
+            </p>
+            <Button
+              onClick={handleClosePopup}
+              className="mt-4 w-full bg-red-600 hover:bg-red-700"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Homepage;
-
-
-
